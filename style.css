@@ -1,0 +1,64 @@
+/* ==============================
+   FONT  (ფონტის ფაილი style.css-ის გვერდით უნდა იდოს)
+============================== */
+@font-face{font-family:"Minecraft";src:url("./MG Minecraft Georgian Regular - Regular.ttf") format("truetype");font-weight:400;font-style:normal;font-display:swap}
+:root{--f:"Minecraft","Noto Sans Georgian","Sylfaen",sans-serif;--bd:#c2457e;--tx:#8a2b5c}
+
+/* RESET & GENERAL */
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;overflow:hidden;font-family:var(--f);font-size:12px;color:var(--tx);background:#e87fae}
+body{display:flex;justify-content:center}
+
+/* GAME CONTAINER */
+#game{position:relative;width:100%;max-width:440px;height:100dvh;overflow:hidden;
+ background:repeating-linear-gradient(0deg,rgba(255,255,255,.2) 0 16px,transparent 16px 32px),
+ repeating-linear-gradient(90deg,rgba(255,255,255,.2) 0 16px,transparent 16px 32px),#ffc4dc}
+@media(min-width:600px){body{align-items:center}#game{height:min(100dvh,860px);box-shadow:0 0 0 6px var(--bd),0 0 0 12px #fff0f6}}
+
+/* SCREENS */
+.screen{display:none;position:absolute;inset:0;z-index:1;flex-direction:column;align-items:center;justify-content:safe center;gap:14px;
+ padding:calc(env(safe-area-inset-top) + 16px) 18px calc(env(safe-area-inset-bottom) + 18px);overflow-x:hidden;overflow-y:auto;text-align:center}
+.screen.on{display:flex;animation:in .4s steps(5)}
+@keyframes in{from{opacity:0;transform:translateY(14px)}}
+
+/* PIXEL BORDERS & WINDOWS */
+.win,.note,.stag{box-shadow:0 -4px var(--bd),0 4px var(--bd),-4px 0 var(--bd),4px 0 var(--bd)}
+.win{width:calc(100% - 8px);margin:4px;flex:none;background:#fff0f6;animation:in .5s steps(5) .3s backwards}
+.bar{display:flex;justify-content:flex-end;align-items:center;gap:6px;height:22px;padding:0 8px;background:#ff8fbd}
+.bar i{width:12px;height:12px;background:#fff;box-shadow:0 0 0 2px var(--bd)}
+.body{padding:14px;font-size:14px;line-height:1.55;white-space:pre-line}
+.fin{font-size:20px;line-height:1.4;font-weight:800;color:#d93a85;text-shadow:0 2px #fff}
+.stag{background:#fff5e1;color:#a0346b;--bd:#e9cfae;padding:6px 12px;margin:4px;font-size:12px;font-weight:800}
+
+/* NOTE (კლუ) */
+.note{position:relative;width:calc(100% - 12px);margin:12px 6px 4px;padding:20px 14px;background:#fff5e1;color:#7a3a52;--bd:#e0b98a;
+ font-size:14px;line-height:1.7;transform:rotate(-1deg);animation:pop .5s steps(5)}
+.note[hidden]{display:none}
+.note p{white-space:pre-line}
+.nb{position:absolute;right:-12px;top:-24px;width:46px}.nb svg{display:block;width:100%}
+.lbl{display:block;margin-bottom:8px;font-size:12px;font-weight:800;color:#d93a85}
+@keyframes pop{from{opacity:0;transform:scale(.85) rotate(-1deg)}}
+
+/* PIXEL SPRITES */
+.sprite{position:relative;flex:none;image-rendering:pixelated;animation:land .6s steps(6),bob 1.2s steps(2) .6s infinite}
+.sprite svg{display:block;width:100%;height:auto}
+.big{width:min(40vw,150px)}
+@keyframes land{0%{transform:translateY(-60px);opacity:0}60%{transform:translateY(8px);opacity:1}}
+@keyframes bob{50%{transform:translateY(-5px)}}
+.sprite[data-expr=celebrate]{animation:jmp .5s steps(3) infinite}
+@keyframes jmp{50%{transform:translateY(-16px)}}
+.sprite::after{position:absolute;right:-8px;top:-6px;font:800 24px var(--f)}
+.sprite[data-expr=thinking]::after{content:"?";color:#d93a85}
+.sprite[data-expr=excited]::after,.sprite[data-expr=surprised]::after{content:"!";color:#ffb400}
+.sprite[data-expr=sly]{animation:land .6s steps(6),sly 1.6s steps(2) .6s infinite}
+.sprite[data-expr=sly]::after{content:"…";color:#d93a85}
+@keyframes sly{50%{transform:rotate(-4deg)}}
+
+/* BACKGROUND DECORATIONS */
+#decor{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.fl{position:absolute;bottom:-40px;opacity:.55;animation:flo linear infinite;will-change:transform}
+.fl svg{display:block;width:100%;image-rendering:pixelated}
+@keyframes flo{to{transform:translateY(-115dvh)}}
+
+@media(max-height:640px){.big{width:110px}.screen{gap:8px}}
+@media(prefers-reduced-motion:reduce){.fl{display:none}}
