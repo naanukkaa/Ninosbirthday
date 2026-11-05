@@ -19,6 +19,7 @@ const typingSound = new Audio(
 // Background music
 music.loop = true;
 music.volume = 0.25;
+music.preload = 'auto';
 
 // Typing sound
 typingSound.loop = true;
@@ -28,16 +29,52 @@ let musicStarted = false;
 let musicMuted = false;
 let typingActive = false;
 
+
+/* ---------- REMEMBER SONG POSITION ---------- */
+// The song continues where the previous page (or closed tab) stopped.
+
+const POS_KEY = 'ninoMusicPos';
+
+try {
+    const saved = parseFloat(localStorage.getItem(POS_KEY));
+
+    if (saved > 0) {
+        music.addEventListener('loadedmetadata', () => {
+            if (saved < music.duration) music.currentTime = saved;
+        }, { once: true });
+    }
+} catch (err) {}
+
+music.load();
+
+function savePos() {
+    try {
+        if (!music.paused) localStorage.setItem(POS_KEY, music.currentTime);
+    } catch (err) {}
+}
+
+setInterval(savePos, 1000);
+addEventListener('pagehide', savePos);
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) savePos();
+});
+
+
+/* ---------- MUSIC CONTROLS ---------- */
+
 async function startMusic() {
-    if (musicMuted || musicStarted) return;
+    if (musicMuted) return false;
+    if (musicStarted) return true;
 
     try {
         await music.play();
         musicStarted = true;
         updateSoundButton();
+        return true;
     } catch (err) {
         // Browser may require user interaction first.
         musicStarted = false;
+        return false;
     }
 }
 
@@ -59,6 +96,17 @@ function toggleMusic() {
     }
 }
 
+function updateSoundButton() {
+    const btn = $('#soundToggle');
+    if (!btn) return;
+
+    btn.textContent = musicMuted ? '🔇' : '🎵';
+    btn.title = musicMuted ? 'ჩართე მუსიკა' : 'გამორთე მუსიკა';
+}
+
+
+/* ---------- TYPING SOUND ---------- */
+
 function startTypingSound() {
     if (typingActive) return;
 
@@ -76,22 +124,51 @@ function stopTypingSound() {
     typingSound.currentTime = 0;
 }
 
-function updateSoundButton() {
-    const btn = $('#soundToggle');
-    if (!btn) return;
 
-    btn.textContent = musicMuted ? '🔇' : '🎵';
-    btn.title = musicMuted ? 'ჩართე მუსიკა' : 'გამორთე მუსიკა';
-}
+/* ---------- TAP-TO-START SCREEN (EVERY PAGE) ---------- */
+// Every page waits for this before it starts. One tap starts the music
+// and also unlocks the typing sound.
 
-// Try starting music immediately.
-startMusic();
+const audioReady = (async () => {
 
-// Start music after the first user interaction if autoplay was blocked.
-document.addEventListener('pointerdown', () => {
-    if (!musicStarted && !musicMuted) startMusic();
-}, { once: true });
+    // Silent attempt: if the browser allows it, music already plays under the screen.
+    startMusic();
 
+    await new Promise(done => {
+        const overlay = document.createElement('div');
+
+        overlay.style.cssText = `
+            position:fixed;
+            inset:0;
+            z-index:100;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            gap:14px;
+            padding:24px;
+            background:#ffc4dc;
+            color:#d93a85;
+            font:800 18px/1.5 var(--f);
+            text-align:center;
+            cursor:pointer;
+        `;
+
+        overlay.innerHTML = `
+            <div style="font-size:48px;animation:bob 1.2s steps(2) infinite">🎀</div>
+            <div>შეეხე ეკრანს დასაწყებად!🩷</div>
+        `;
+
+        overlay.addEventListener('click', async () => {
+            await startMusic();
+            overlay.remove();
+            done();
+        });
+
+        document.body.append(overlay);
+    });
+
+})();
 
 /* ---------- PIXEL ART RENDERER ---------- */
 
@@ -467,6 +544,8 @@ const PAGES = {
 /* ---------- BUILD CURRENT QR PAGE ---------- */
 
 (async () => {
+
+    if (!document.body.dataset.p) return;
 
     const n = +document.body.dataset.p;
     const d = PAGES[n];
